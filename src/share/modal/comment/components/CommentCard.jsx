@@ -8,17 +8,17 @@ const CommentCard = ({ comment = { id: -1, msg: '' } }) => {
   const [functionMode, setFunctionMode] = useState('update');
   const [msg, setMsg] = useState(comment.msg);
 
-  const submit = useCallback(() => {
+  const submit = useCallback(async () => {
     if (functionMode === 'update') {
-      // TODO implement update logic
+      // TODO: Implement update logic
       try {
         console.log('Success');
-        // 2. call API to update note
         const userToken = Cookies.get('UserToken');
         console.log('CALLING REQUEST');
         console.log(comment.id);
         console.log(msg);
-        Axios.patch(
+
+        const res = await Axios.patch(
           '/comment',
           {
             commentId: comment.id,
@@ -29,21 +29,27 @@ const CommentCard = ({ comment = { id: -1, msg: '' } }) => {
               Authorization: `Bearer ${userToken}`,
             },
           }
-        ).then((res) => {
-          console.log(res);
-          setMsg(res.data.data.text);
-          console.log(res.data.data.text);
-          setCurComment({ id: res.data.data.id, msg: res.data.data.text });
-        });
+        );
+
+        console.log(res);
+        setMsg(res.data.data.text);
+        console.log(res.data.data.text);
+        setCurComment({ id: res.data.data.id, msg: res.data.data.text });
       } catch (error) {
         console.log(error);
       }
+
       console.log('update');
       setFunctionMode('');
       setIsConfirm(false);
     } else if (functionMode === 'delete') {
       // TODO implement delete logic
-      console.log('delete');
+      Axios.delete('/comment', {
+        headers: { Authorization: `Bearer ${userToken}` },
+        data: { commentId: comment.id },
+      }).then((res) => {
+        console.log('success');
+      });
     } else {
       // TODO setStatus (snackbar) to error
       console.log('error');
